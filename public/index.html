@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Torneo de Fútbol Infantil</title>
+    <!-- 1. Se cambió la fuente por una más amigable y legible para niños -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* 2. Paleta de colores y estilos completamente renovada para ser más infantil */
+        :root {
+            --bg-color: #87CEEB; /* Azul Cielo */
+            --card-bg: #ffffff;
+            --primary-color: #FFD700; /* Amarillo Sol */
+            --primary-hover: #FFC700;
+            --secondary-color: #32CD32; /* Verde Césped */
+            --secondary-hover: #228B22;
+            --danger-color: #FF6347; /* Rojo Tomate */
+            --danger-hover: #E55337;
+            --text-color: #4A4A4A;
+            --title-color: #005A9C;
+            --border-radius: 16px;
+            --shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.15);
+        }
+        body {
+            font-family: 'Baloo 2', cursive;
+            background-color: var(--bg-color);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-color);
+            padding: 1rem;
+            margin: 0;
+        }
+        .card {
+            background-color: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow);
+            padding: 1.5rem; margin-bottom: 1.5rem; border: 2px solid white;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem;
+            color: var(--text-color); transition: all 0.2s ease; cursor: pointer; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { background-color: #BDBDBD; cursor: not-allowed; opacity: 0.7; }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: var(--secondary-color); color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: var(--secondary-hover); }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .input-field {
+            width: 100%; padding: 0.75rem; border: 2px solid #E0E0E0; border-radius: 10px;
+            font-family: 'Baloo 2', cursive; font-size: 1rem; transition: all 0.2s;
+        }
+        .input-field:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.5); }
+        .table-header th { background-color: var(--primary-color); padding: 0.75rem; font-size: 1.2rem; }
+        .winner-banner {
+            background: linear-gradient(45deg, var(--primary-color), #FFEC8B); color: var(--title-color);
+            text-align: center; border: 4px dashed var(--secondary-color); position: relative; overflow: hidden;
+        }
+        #winner-name { font-size: 3.5rem; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); font-weight: 800; }
+        .fixed-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background-color: rgba(135, 206, 235, 0.8); backdrop-filter: blur(5px); }
+        .spinner { border: 6px solid #fff; border-top: 6px solid var(--secondary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(3060deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen" class="fixed-overlay">
+        <div>
+            <div class="spinner" style="margin: auto;"></div>
+            <p style="color: var(--title-color); font-weight: 600; font-size: 1.2rem; margin-top: 1rem;">Cargando el campo de juego...</p>
+        </div>
+    </div>
+
+    <div id="login-screen" class="fixed-overlay" style="display: none;">
+        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+            <h2 style="font-size: 2rem; color: var(--title-color); font-weight: 700;">¡Entrada Secreta! 🤫</h2>
+            <p style="margin-bottom: 1.5rem;">Profe, escribe la contraseña para entrar.</p>
+            <input type="password" id="password-input" class="input-field" placeholder="••••••••">
+            <p id="login-error" style="color: var(--danger-color); height: 1.2rem; margin-top: 0.5rem;"></p>
+            <button id="login-btn" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">¡Entrar!</button>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-7xl mx-auto" style="display: none;">
+        <header class="text-center mb-8">
+            <!-- 3. Títulos y textos actualizados -->
+            <h1 style="font-size: 3.5rem; font-weight: 800; color: var(--title-color); text-shadow: 2px 2px 4px #fff;">
+                🏆 Torneo de Fútbol de Estrellas 🏆
+            </h1>
+            <p style="font-size: 1.5rem; color: var(--text-color);">¡Organiza los partidos de los campeones!</p>
+        </header>
+
+        <div id="winner-section" class="hidden card winner-banner">
+            <h2 style="font-size: 2.5rem; font-weight: 700;">🎉 ¡TENEMOS UN CAMPEÓN! 🎉</h2>
+            <p id="winner-name"></p>
+            <button onclick="app.resetTournament()" class="btn btn-secondary mt-6">¡Jugar Otra Vez!</button>
+        </div>
+
+        <div id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div id="config-panel">
+                    <div class="card">
+                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            🧍‍♂️🧍‍♀️ 1. ¡Añade los Equipos!
+                        </h2>
+                        <div id="add-team-wrapper" class="flex gap-2">
+                            <input type="text" id="team-name" class="input-field" placeholder="Nombre del curso (Ej: 1-A)">
+                            <button id="add-team-btn" onclick="app.addTeam()" class="btn btn-primary text-2xl">➕</button>
+                        </div>
+                        <div id="teams-list" class="mt-4 space-y-2"></div>
+                    </div>
+
+                    <div class="card">
+                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            ✨ 2. ¡Haz el Sorteo Mágico!
+                        </h2>
+                        <p class="mb-4">Esto creará todos los partidos para que cada equipo juegue contra todos.</p>
+                        <button id="generate-schedule-btn" onclick="app.generateSchedule()" class="btn btn-secondary w-full" disabled>Generar Partidos</button>
+                        <button id="reset-tournament-btn" onclick="app.resetTournament()" class="btn btn-danger w-full mt-4 hidden">
+                            Reiniciar Todo el Torneo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div id="schedule-section" class="space-y-6 hidden"></div>
+                <div id="standings-and-scorers" class="space-y-6 hidden">
+                    <div id="standings-section" class="card">
+                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            ⭐ Tabla de Estrellas ⭐
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <!-- 4. Tabla simplificada con emojis para que sea más fácil de entender -->
+                            <table class="min-w-full text-sm text-left">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="p-2 rounded-l-lg">#</th><th class="p-2">Equipo</th>
+                                        <th class="p-2 text-center" title="Partidos Jugados">🎮</th>
+                                        <th class="p-2 text-center" title="Partidos Ganados">✅</th>
+                                        <th class="p-2 text-center" title="Partidos Empatados">🤝</th>
+                                        <th class="p-2 text-center" title="Partidos Perdidos">❌</th>
+                                        <th class="p-2 text-center" title="Goles a Favor">⚽+</th>
+                                        <th class="p-2 text-center" title="Diferencia de Goles">+/-</th>
+                                        <th class="p-2 text-center rounded-r-lg" title="Puntos">✨</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standings-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="top-scorers-section" class="card">
+                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            ⚽ Goleadores del Torneo ⚽
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-left">
+                                <thead class="table-header">
+                                    <tr><th class="p-2 rounded-l-lg">#</th><th class="p-2">Jugador</th><th class="p-2">Equipo</th><th class="p-2 text-center rounded-r-lg">Goles</th></tr>
+                                </thead>
+                                <tbody id="top-scorers-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- El Javascript es el original, con cambios mínimos para leer la nueva configuración -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const App = function() {
+            // Toda la lógica interna es la original que ya funcionaba
+            this.teams = [];
+            this.schedule = [];
+            this.finalMatch = null;
+            this.masterPassword = '';
+            this.isAuthenticated = false;
+            this.db = null;
+            this.auth = null;
+            this.appId = 'default-tournament-id'; // Se reemplazará con el ID del servidor
+            this.unsubscribe = null;
+
+            this.init = async function() {
+                try {
+                    const response = await fetch('/api/get-config');
+                    if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las instrucciones y la consola de Vercel.');
+                    const config = await response.json();
+
+                    // Se lee la configuración que ahora viene anidada
+                    const firebaseApp = initializeApp(config.firebase);
+                    this.db = getFirestore(firebaseApp);
+                    this.auth = getAuth(firebaseApp);
+                    this.appId = config.torneoId; // Se usa el ID de torneo para separar datos
+                    this.masterPassword = config.masterPassword;
+
+                    onAuthStateChanged(this.auth, user => {
+                        if (user) {
+                            document.getElementById('loading-screen').style.display = 'none';
+                            document.getElementById('login-screen').style.display = 'flex';
+                            this.setupLogin();
+                        } else {
+                           signInAnonymously(this.auth);
+                        }
+                    });
+                } catch (error) {
+                    document.getElementById('loading-screen').innerHTML = `<p style="color:var(--danger-color); font-weight:600; text-align:center; padding: 2rem;">Error al cargar: ${error.message}</p>`;
+                }
+            };
+            
+            this.setupLogin = function() {
+                const loginBtn = document.getElementById('login-btn');
+                const passwordInput = document.getElementById('password-input');
+                passwordInput.focus();
+                const attemptLogin = () => {
+                    if (passwordInput.value === this.masterPassword) {
+                        this.isAuthenticated = true;
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('app').style.display = 'block';
+                        this.setupFirestoreListener();
+                    } else {
+                        document.getElementById('login-error').textContent = '¡Contraseña incorrecta!';
+                    }
+                };
+                loginBtn.onclick = attemptLogin;
+                passwordInput.onkeyup = (e) => { if (e.key === 'Enter') attemptLogin(); };
+            };
+
+            this.setupFirestoreListener = function() {
+                if (this.unsubscribe) this.unsubscribe();
+                const stateRef = doc(this.db, "tournaments", this.appId, "data", "mainState");
+                this.unsubscribe = onSnapshot(stateRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const state = docSnap.data();
+                        this.teams = state.teams || [];
+                        this.schedule = state.schedule || [];
+                        this.finalMatch = state.finalMatch || null;
+                    } else {
+                        this.teams = []; this.schedule = []; this.finalMatch = null;
+                    }
+                    if(this.isAuthenticated) this.renderAll();
+                });
+            };
+            
+            this.saveStateToFirestore = async function() {
+                if (!this.isAuthenticated) return;
+                const stateRef = doc(this.db, "tournaments", this.appId, "data", "mainState");
+                await setDoc(stateRef, {
+                    teams: JSON.parse(JSON.stringify(this.teams)), 
+                    schedule: JSON.parse(JSON.stringify(this.schedule)),
+                    finalMatch: JSON.parse(JSON.stringify(this.finalMatch)),
+                });
+            };
+            
+            this.resetTournament = function() {
+                if (confirm("¿Seguro que quieres borrar TODOS los datos de este torneo? ¡No se puede deshacer!")) {
+                    this.teams = [];
+                    this.schedule = [];
+                    this.finalMatch = null;
+                    this.saveStateToFirestore();
+                    window.location.reload();
+                }
+            };
+
+            // El resto de la lógica (addTeam, generateSchedule, etc.) es la misma que la tuya
+            // ... (Toda la lógica original se mantiene aquí) ...
+            
+            this.addTeam = function() {
+                if (this.schedule.length > 0) return;
+                const teamNameInput = document.getElementById('team-name');
+                const name = teamNameInput.value.trim();
+                if (name && !this.teams.some(team => team.name === name)) {
+                    this.teams.push({ name, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 });
+                    teamNameInput.value = '';
+                    this.saveStateToFirestore();
+                }
+            }
+            
+            this.generateSchedule = function() {
+                if (this.teams.length < 2) return;
+                let teams = [...this.teams.map(t => t.name)];
+                if (teams.length % 2 !== 0) { teams.push("descanso"); }
+                const schedule = [];
+                const numRounds = teams.length - 1;
+                const halfSize = teams.length / 2;
+                for (let round = 0; round < numRounds; round++) {
+                    const roundMatches = [];
+                    for (let i = 0; i < halfSize; i++) {
+                        const team1 = teams[i], team2 = teams[teams.length - 1 - i];
+                        if (team1 !== "descanso" && team2 !== "descanso") {
+                            const match = (round % 2 === 0) 
+                                ? { team1: team1, team2: team2 } : { team1: team2, team2: team1 };
+                            roundMatches.push({ ...match, score1: null, score2: null, played: false, bestPlayer: '', scorers: [] });
+                        }
+                    }
+                    schedule.push({ round: round + 1, matches: roundMatches });
+                    teams.splice(1, 0, teams.pop());
+                }
+                this.schedule = schedule;
+                this.saveStateToFirestore();
+            }
+
+            this.updateScore = function(roundIndex, matchIndex) {
+                const match = this.schedule[roundIndex].matches[matchIndex];
+                const id = `${roundIndex}-${matchIndex}`;
+                const score1 = parseInt(document.getElementById(`score1-${id}`).value);
+                const score2 = parseInt(document.getElementById(`score2-${id}`).value);
+                if (!isNaN(score1) && !isNaN(score2) && score1 >= 0 && score2 >= 0) {
+                    match.score1 = score1;
+                    match.score2 = score2;
+                    match.played = true;
+                    match.bestPlayer = document.getElementById(`best-player-${id}`).value.trim();
+                    this.saveStateToFirestore();
+                }
+            }
+
+            this.addScorer = function(roundIndex, matchIndex) {
+                const match = this.schedule[roundIndex].matches[matchIndex];
+                const id = `${roundIndex}-${matchIndex}`;
+                const playerName = document.getElementById(`scorer-name-${id}`).value.trim();
+                const teamName = document.getElementById(`scorer-team-${id}`).value;
+                if (playerName && teamName) {
+                    if (!match.scorers) match.scorers = [];
+                    match.scorers.push({ player: playerName, team: teamName });
+                    document.getElementById(`scorer-name-${id}`).value = '';
+                    this.saveStateToFirestore();
+                }
+            }
+
+            this.removeScorer = function(roundIndex, matchIndex, scorerIndex) {
+                this.schedule[roundIndex].matches[matchIndex].scorers.splice(scorerIndex, 1);
+                this.saveStateToFirestore();
+            }
+            
+            this.calculateTeamStats = function() {
+                this.teams.forEach(t => { t.pj=0; t.g=0; t.e=0; t.p=0; t.gf=0; t.gc=0; t.dg=0; t.pts=0; });
+                this.schedule.forEach(round => {
+                    round.matches.forEach(match => {
+                        if (match.played) {
+                            const t1 = this.teams.find(t => t.name === match.team1);
+                            const t2 = this.teams.find(t => t.name === match.team2);
+                            if (!t1 || !t2) return;
+                            t1.pj++; t2.pj++;
+                            t1.gf += match.score1; t1.gc += match.score2;
+                            t2.gf += match.score2; t2.gc += match.score1;
+                            if (match.score1 > match.score2) { t1.g++; t2.p++; t1.pts += 3; }
+                            else if (match.score2 > match.score1) { t2.g++; t1.p++; t2.pts += 3; }
+                            else { t1.e++; t2.e++; t1.pts += 1; }
+                        }
+                    });
+                });
+                this.teams.forEach(t => t.dg = t.gf - t.gc);
+                this.teams.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+            }
+            
+            this.checkIfTournamentFinished = function() {
+                const allPlayed = this.schedule.length > 0 && this.schedule.every(r => r.matches.every(m => m.played));
+                if(allPlayed && !this.finalMatch && this.teams.length >= 2) {
+                   this.finalMatch = { 
+                       team1: this.teams[0].name, team2: this.teams[1].name, 
+                       score1: null, score2: null, played: false, winner: null, 
+                       bestPlayer: '', scorers: [] 
+                    };
+                   this.saveStateToFirestore();
+                } else if (this.finalMatch && this.finalMatch.winner) {
+                    document.getElementById('winner-section').classList.remove('hidden');
+                    document.getElementById('winner-name').textContent = `🎉 ${this.finalMatch.winner} 🎉`;
+                    document.getElementById('main-content').style.display = 'none';
+                }
+            }
+
+            this.renderAll = function() {
+                if (!this.isAuthenticated) return;
+                this.calculateTeamStats();
+                this.checkIfTournamentFinished();
+                
+                const scheduleGenerated = this.schedule.length > 0;
+                document.getElementById('add-team-wrapper').style.opacity = scheduleGenerated ? '0.5' : '1';
+                document.getElementById('team-name').disabled = scheduleGenerated;
+                document.getElementById('add-team-btn').disabled = scheduleGenerated;
+                document.getElementById('standings-and-scorers').classList.toggle('hidden', !scheduleGenerated);
+                document.getElementById('reset-tournament-btn').classList.toggle('hidden', this.teams.length === 0);
+
+                this.renderTeams();
+                this.renderSchedule();
+                this.renderStandings();
+                this.renderTopScorers();
+            }
+            
+            this.renderTeams = function() {
+                document.getElementById('teams-list').innerHTML = this.teams.map((team, index) => `<div style="display: flex; justify-content: space-between; align-items: center; background: #F0F8FF; padding: 0.5rem 1rem; border-radius: 8px;"><span style="font-weight: 600;">${team.name}</span><button onclick="app.removeTeam(${index})" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--danger-color);">❌</button></div>`).join('');
+                document.getElementById('generate-schedule-btn').disabled = this.teams.length < 2 || this.schedule.length > 0;
+            }
+
+            this.renderSchedule = function() {
+                const section = document.getElementById('schedule-section');
+                section.classList.toggle('hidden', this.schedule.length === 0);
+                section.innerHTML = this.schedule.map((round, roundIndex) => `
+                    <div class="card">
+                        <h3 style="font-size: 1.5rem; text-align: center; color: var(--secondary-color); font-weight: 700;">Jornada ${round.round}</h3>
+                        <div class="space-y-6 mt-4">
+                            ${round.matches.map((match, matchIndex) => this.renderMatchCard(match, roundIndex, matchIndex)).join('')}
+                        </div>
+                    </div>`).join('');
+            }
+
+            this.renderMatchCard = function(match, roundIndex, matchIndex) {
+                 const id = `${roundIndex}-${matchIndex}`;
+                 return `<div class="border p-4 rounded-lg ${match.played ? 'bg-green-50' : ''}">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-2">
+                            <div class="text-center sm:text-right font-semibold text-lg">${match.team1}</div>
+                            <div class="flex items-center justify-center gap-2">
+                                <input type="number" min="0" id="score1-${id}" class="input-field text-center w-16 text-xl font-bold" value="${match.score1 ?? ''}" ${match.played?'readonly':''}>
+                                <span class="font-bold text-gray-400">vs</span>
+                                <input type="number" min="0" id="score2-${id}" class="input-field text-center w-16 text-xl font-bold" value="${match.score2 ?? ''}" ${match.played?'readonly':''}>
+                            </div>
+                            <div class="text-center sm:text-left font-semibold text-lg">${match.team2}</div>
+                        </div>
+                        ${!match.played ? `<button onclick="app.updateScore(${roundIndex}, ${matchIndex})" class="btn btn-secondary w-full mt-4">¡Guardar Marcador!</button>` : ''}
+                    </div>`;
+            }
+            
+            this.renderStandings = function() {
+                // Modificado para coincidir con la nueva tabla de emojis
+                document.getElementById('standings-body').innerHTML = this.teams.map((team, index) => `
+                    <tr class="${index < 2 ? 'bg-yellow-100' : 'bg-white'} border-b">
+                        <td class="p-2 font-bold">${index + 1}</td><td class="p-2">${team.name}</td>
+                        <td class="p-2 text-center">${team.pj}</td><td class="p-2 text-center">${team.g}</td>
+                        <td class="p-2 text-center">${team.e}</td><td class="p-2 text-center">${team.p}</td>
+                        <td class="p-2 text-center">${team.gf}</td><td class="p-2 text-center font-semibold">${team.dg}</td>
+                        <td class="p-2 text-center font-bold text-lg text-green-600">${team.pts}</td>
+                    </tr>`).join('');
+            }
+            this.renderTopScorers = function() {
+                 const scorerMap = new Map();
+                 this.schedule.forEach(round => round.matches.forEach(match => (match.scorers || []).forEach(scorer => {
+                    const key = `${scorer.player}-${scorer.team}`;
+                    if (!scorerMap.has(key)) scorerMap.set(key, { player: scorer.player, team: scorer.team, goals: 0 });
+                    scorerMap.get(key).goals++;
+                 })));
+                const sortedScorers = Array.from(scorerMap.values()).sort((a, b) => b.goals - a.goals);
+                document.getElementById('top-scorers-body').innerHTML = sortedScorers.map((s, i) => `<tr class="bg-white border-b"><td class="p-2 font-bold">${i+1}</td><td class="p-2">${s.player}</td><td class="p-2 text-gray-600">${s.team}</td><td class="p-2 text-center font-bold">${s.goals}</td></tr>`).join('');
+            }
+        }
+        
+        const app = new App();
+        document.addEventListener('DOMContentLoaded', () => app.init());
+        window.app = app; 
+    </script>
+</body>
+</html>
+
