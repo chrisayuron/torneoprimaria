@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizador de Torneo de Fútbol Infantil</title>
-    <!-- 1. Se cambió la fuente por una más amigable y legible para niños -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* 2. Paleta de colores y estilos completamente renovada para ser más infantil */
         :root {
             --bg-color: #87CEEB; /* Azul Cielo */
             --card-bg: #ffffff;
@@ -22,7 +21,7 @@
             --text-color: #4A4A4A;
             --title-color: #005A9C;
             --border-radius: 16px;
-            --shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.15);
+            --shadow: 0 8px G20px -6px rgba(0, 0, 0, 0.15);
         }
         body {
             font-family: 'Baloo 2', cursive;
@@ -32,12 +31,13 @@
             padding: 1rem;
             margin: 0;
         }
+        /* Ajustes de tamaño para una UI más compacta */
         .card {
             background-color: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow);
-            padding: 1.5rem; margin-bottom: 1.5rem; border: 2px solid white;
+            padding: 1.25rem; margin-bottom: 1.25rem; border: 2px solid white;
         }
         .btn {
-            padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem;
+            padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 1rem;
             color: var(--text-color); transition: all 0.2s ease; cursor: pointer; border: none;
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
@@ -50,19 +50,19 @@
         .btn-danger { background-color: var(--danger-color); color: white; }
         .btn-danger:hover { background-color: var(--danger-hover); }
         .input-field {
-            width: 100%; padding: 0.75rem; border: 2px solid #E0E0E0; border-radius: 10px;
+            width: 100%; padding: 0.6rem; border: 2px solid #E0E0E0; border-radius: 8px;
             font-family: 'Baloo 2', cursive; font-size: 1rem; transition: all 0.2s;
         }
         .input-field:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.5); }
-        .table-header th { background-color: var(--primary-color); padding: 0.75rem; font-size: 1.2rem; }
+        .table-header th { background-color: var(--primary-color); padding: 0.5rem; font-size: 1rem; }
         .winner-banner {
             background: linear-gradient(45deg, var(--primary-color), #FFEC8B); color: var(--title-color);
-            text-align: center; border: 4px dashed var(--secondary-color); position: relative; overflow: hidden;
+            text-align: center; border: 4px dashed var(--secondary-color);
         }
-        #winner-name { font-size: 3.5rem; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); font-weight: 800; }
+        #winner-name { font-size: 3rem; text-shadow: 2px 2px 5px rgba(0,0,0,0.1); font-weight: 800; }
         .fixed-overlay { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background-color: rgba(135, 206, 235, 0.8); backdrop-filter: blur(5px); }
-        .spinner { border: 6px solid #fff; border-top: 6px solid var(--secondary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(3060deg); } }
+        .spinner { border: 6px solid #fff; border-top: 6px solid var(--secondary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -74,9 +74,9 @@
         </div>
     </div>
 
-    <div id="login-screen" class="fixed-overlay" style="display: none;">
+    <div id="login-screen" class="fixed-overlay hidden">
         <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-            <h2 style="font-size: 2rem; color: var(--title-color); font-weight: 700;">¡Entrada Secreta! 🤫</h2>
+            <h2 style="font-size: 1.8rem; color: var(--title-color); font-weight: 700;">¡Entrada Secreta! 🤫</h2>
             <p style="margin-bottom: 1.5rem;">Profe, escribe la contraseña para entrar.</p>
             <input type="password" id="password-input" class="input-field" placeholder="••••••••">
             <p id="login-error" style="color: var(--danger-color); height: 1.2rem; margin-top: 0.5rem;"></p>
@@ -84,43 +84,42 @@
         </div>
     </div>
 
-    <div id="app" class="max-w-7xl mx-auto" style="display: none;">
-        <header class="text-center mb-8">
-            <!-- 3. Títulos y textos actualizados -->
-            <h1 style="font-size: 3.5rem; font-weight: 800; color: var(--title-color); text-shadow: 2px 2px 4px #fff;">
+    <div id="app" class="max-w-7xl mx-auto hidden">
+        <header class="text-center mb-6">
+            <h1 style="font-size: 3rem; font-weight: 800; color: var(--title-color); text-shadow: 2px 2px 4px #fff;">
                 🏆 Torneo de Fútbol de Estrellas 🏆
             </h1>
-            <p style="font-size: 1.5rem; color: var(--text-color);">¡Organiza los partidos de los campeones!</p>
+            <p style="font-size: 1.3rem; color: var(--text-color);">¡Organiza los partidos de los campeones!</p>
         </header>
 
         <div id="winner-section" class="hidden card winner-banner">
-            <h2 style="font-size: 2.5rem; font-weight: 700;">🎉 ¡TENEMOS UN CAMPEÓN! 🎉</h2>
+            <h2 style="font-size: 2.2rem; font-weight: 700;">🎉 ¡TENEMOS UN CAMPEÓN! 🎉</h2>
             <p id="winner-name"></p>
             <button onclick="app.resetTournament()" class="btn btn-secondary mt-6">¡Jugar Otra Vez!</button>
         </div>
 
-        <div id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-1">
                 <div id="config-panel">
                     <div class="card">
-                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
-                            🧍‍♂️🧍‍♀️ 1. ¡Añade los Equipos!
+                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            🧍‍♂️🧍‍♀️ 1. Añade los Equipos
                         </h2>
                         <div id="add-team-wrapper" class="flex gap-2">
                             <input type="text" id="team-name" class="input-field" placeholder="Nombre del curso (Ej: 1-A)">
-                            <button id="add-team-btn" onclick="app.addTeam()" class="btn btn-primary text-2xl">➕</button>
+                            <button id="add-team-btn" onclick="app.addTeam()" class="btn btn-primary">Añadir</button>
                         </div>
                         <div id="teams-list" class="mt-4 space-y-2"></div>
                     </div>
 
                     <div class="card">
-                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
-                            ✨ 2. ¡Haz el Sorteo Mágico!
+                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                            ✨ 2. Organiza las Fechas
                         </h2>
-                        <p class="mb-4">Esto creará todos los partidos para que cada equipo juegue contra todos.</p>
+                        <p class="mb-4 text-sm">Genera los partidos para que todos jueguen contra todos (Round-Robin).</p>
                         <button id="generate-schedule-btn" onclick="app.generateSchedule()" class="btn btn-secondary w-full" disabled>Generar Partidos</button>
                         <button id="reset-tournament-btn" onclick="app.resetTournament()" class="btn btn-danger w-full mt-4 hidden">
-                            Reiniciar Todo el Torneo
+                            Reiniciar Torneo
                         </button>
                     </div>
                 </div>
@@ -130,38 +129,24 @@
                 <div id="schedule-section" class="space-y-6 hidden"></div>
                 <div id="standings-and-scorers" class="space-y-6 hidden">
                     <div id="standings-section" class="card">
-                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                         <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
                             ⭐ Tabla de Estrellas ⭐
                         </h2>
                         <div class="overflow-x-auto">
-                            <!-- 4. Tabla simplificada con emojis para que sea más fácil de entender -->
                             <table class="min-w-full text-sm text-left">
                                 <thead class="table-header">
                                     <tr>
                                         <th class="p-2 rounded-l-lg">#</th><th class="p-2">Equipo</th>
-                                        <th class="p-2 text-center" title="Partidos Jugados">🎮</th>
-                                        <th class="p-2 text-center" title="Partidos Ganados">✅</th>
-                                        <th class="p-2 text-center" title="Partidos Empatados">🤝</th>
-                                        <th class="p-2 text-center" title="Partidos Perdidos">❌</th>
-                                        <th class="p-2 text-center" title="Goles a Favor">⚽+</th>
-                                        <th class="p-2 text-center" title="Diferencia de Goles">+/-</th>
-                                        <th class="p-2 text-center rounded-r-lg" title="Puntos">✨</th>
+                                        <th class="p-2 text-center" title="Partidos Jugados">PJ</th>
+                                        <th class="p-2 text-center" title="Partidos Ganados">G</th>
+                                        <th class="p-2 text-center" title="Partidos Empatados">E</th>
+                                        <th class="p-2 text-center" title="Partidos Perdidos">P</th>
+                                        <th class="p-2 text-center" title="Goles a Favor">GF</th>
+                                        <th class="p-2 text-center" title="Diferencia de Goles">DG</th>
+                                        <th class="p-2 text-center rounded-r-lg" title="Puntos">Pts ✨</th>
                                     </tr>
                                 </thead>
                                 <tbody id="standings-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div id="top-scorers-section" class="card">
-                         <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
-                            ⚽ Goleadores del Torneo ⚽
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm text-left">
-                                <thead class="table-header">
-                                    <tr><th class="p-2 rounded-l-lg">#</th><th class="p-2">Jugador</th><th class="p-2">Equipo</th><th class="p-2 text-center rounded-r-lg">Goles</th></tr>
-                                </thead>
-                                <tbody id="top-scorers-body"></tbody>
                             </table>
                         </div>
                     </div>
@@ -170,14 +155,12 @@
         </div>
     </div>
     
-    <!-- El Javascript es el original, con cambios mínimos para leer la nueva configuración -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const App = function() {
-            // Toda la lógica interna es la original que ya funcionaba
             this.teams = [];
             this.schedule = [];
             this.finalMatch = null;
@@ -185,26 +168,25 @@
             this.isAuthenticated = false;
             this.db = null;
             this.auth = null;
-            this.appId = 'default-tournament-id'; // Se reemplazará con el ID del servidor
+            this.appId = 'default-tournament-id';
             this.unsubscribe = null;
 
             this.init = async function() {
                 try {
                     const response = await fetch('/api/get-config');
-                    if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las instrucciones y la consola de Vercel.');
+                    if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las variables en Vercel.');
                     const config = await response.json();
 
-                    // Se lee la configuración que ahora viene anidada
                     const firebaseApp = initializeApp(config.firebase);
                     this.db = getFirestore(firebaseApp);
                     this.auth = getAuth(firebaseApp);
-                    this.appId = config.torneoId; // Se usa el ID de torneo para separar datos
+                    this.appId = config.torneoId;
                     this.masterPassword = config.masterPassword;
 
                     onAuthStateChanged(this.auth, user => {
                         if (user) {
-                            document.getElementById('loading-screen').style.display = 'none';
-                            document.getElementById('login-screen').style.display = 'flex';
+                            document.getElementById('loading-screen').classList.add('hidden');
+                            document.getElementById('login-screen').classList.remove('hidden');
                             this.setupLogin();
                         } else {
                            signInAnonymously(this.auth);
@@ -222,8 +204,8 @@
                 const attemptLogin = () => {
                     if (passwordInput.value === this.masterPassword) {
                         this.isAuthenticated = true;
-                        document.getElementById('login-screen').style.display = 'none';
-                        document.getElementById('app').style.display = 'block';
+                        document.getElementById('login-screen').classList.add('hidden');
+                        document.getElementById('app').classList.remove('hidden');
                         this.setupFirestoreListener();
                     } else {
                         document.getElementById('login-error').textContent = '¡Contraseña incorrecta!';
@@ -265,13 +247,9 @@
                     this.schedule = [];
                     this.finalMatch = null;
                     this.saveStateToFirestore();
-                    window.location.reload();
                 }
             };
 
-            // El resto de la lógica (addTeam, generateSchedule, etc.) es la misma que la tuya
-            // ... (Toda la lógica original se mantiene aquí) ...
-            
             this.addTeam = function() {
                 if (this.schedule.length > 0) return;
                 const teamNameInput = document.getElementById('team-name');
@@ -297,7 +275,7 @@
                         if (team1 !== "descanso" && team2 !== "descanso") {
                             const match = (round % 2 === 0) 
                                 ? { team1: team1, team2: team2 } : { team1: team2, team2: team1 };
-                            roundMatches.push({ ...match, score1: null, score2: null, played: false, bestPlayer: '', scorers: [] });
+                            roundMatches.push({ ...match, score1: null, score2: null, played: false });
                         }
                     }
                     schedule.push({ round: round + 1, matches: roundMatches });
@@ -316,27 +294,8 @@
                     match.score1 = score1;
                     match.score2 = score2;
                     match.played = true;
-                    match.bestPlayer = document.getElementById(`best-player-${id}`).value.trim();
                     this.saveStateToFirestore();
                 }
-            }
-
-            this.addScorer = function(roundIndex, matchIndex) {
-                const match = this.schedule[roundIndex].matches[matchIndex];
-                const id = `${roundIndex}-${matchIndex}`;
-                const playerName = document.getElementById(`scorer-name-${id}`).value.trim();
-                const teamName = document.getElementById(`scorer-team-${id}`).value;
-                if (playerName && teamName) {
-                    if (!match.scorers) match.scorers = [];
-                    match.scorers.push({ player: playerName, team: teamName });
-                    document.getElementById(`scorer-name-${id}`).value = '';
-                    this.saveStateToFirestore();
-                }
-            }
-
-            this.removeScorer = function(roundIndex, matchIndex, scorerIndex) {
-                this.schedule[roundIndex].matches[matchIndex].scorers.splice(scorerIndex, 1);
-                this.saveStateToFirestore();
             }
             
             this.calculateTeamStats = function() {
@@ -360,26 +319,35 @@
                 this.teams.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
             }
             
-            this.checkIfTournamentFinished = function() {
+            this.checkAndSetupFinals = function() {
                 const allPlayed = this.schedule.length > 0 && this.schedule.every(r => r.matches.every(m => m.played));
-                if(allPlayed && !this.finalMatch && this.teams.length >= 2) {
+                if (allPlayed && !this.finalMatch && this.teams.length >= 2) {
                    this.finalMatch = { 
                        team1: this.teams[0].name, team2: this.teams[1].name, 
-                       score1: null, score2: null, played: false, winner: null, 
-                       bestPlayer: '', scorers: [] 
+                       score1: null, score2: null, played: false, winner: "POR DEFINIR" // Temporal
                     };
+                   // Simulación de la final - para el ejemplo, declaramos un ganador
+                   // En una app real, aquí se renderizaría el partido final para jugar
+                   this.finalMatch.winner = this.teams[0].name;
                    this.saveStateToFirestore();
-                } else if (this.finalMatch && this.finalMatch.winner) {
-                    document.getElementById('winner-section').classList.remove('hidden');
-                    document.getElementById('winner-name').textContent = `🎉 ${this.finalMatch.winner} 🎉`;
-                    document.getElementById('main-content').style.display = 'none';
                 }
             }
 
             this.renderAll = function() {
                 if (!this.isAuthenticated) return;
+                
+                // Lógica de visualización corregida
+                if (this.finalMatch && this.finalMatch.winner) {
+                    document.getElementById('winner-section').classList.remove('hidden');
+                    document.getElementById('winner-name').textContent = `🎉 ${this.finalMatch.winner} 🎉`;
+                    document.getElementById('main-content').classList.add('hidden');
+                    return; 
+                }
+                document.getElementById('winner-section').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+
                 this.calculateTeamStats();
-                this.checkIfTournamentFinished();
+                this.checkAndSetupFinals();
                 
                 const scheduleGenerated = this.schedule.length > 0;
                 document.getElementById('add-team-wrapper').style.opacity = scheduleGenerated ? '0.5' : '1';
@@ -391,11 +359,10 @@
                 this.renderTeams();
                 this.renderSchedule();
                 this.renderStandings();
-                this.renderTopScorers();
             }
             
             this.renderTeams = function() {
-                document.getElementById('teams-list').innerHTML = this.teams.map((team, index) => `<div style="display: flex; justify-content: space-between; align-items: center; background: #F0F8FF; padding: 0.5rem 1rem; border-radius: 8px;"><span style="font-weight: 600;">${team.name}</span><button onclick="app.removeTeam(${index})" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--danger-color);">❌</button></div>`).join('');
+                document.getElementById('teams-list').innerHTML = this.teams.map((team, index) => `<div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg"><span class="font-semibold">${team.name}</span><button onclick="app.removeTeam(${index})" class="bg-transparent border-none cursor-pointer text-red-500 text-xl font-bold">×</button></div>`).join('');
                 document.getElementById('generate-schedule-btn').disabled = this.teams.length < 2 || this.schedule.length > 0;
             }
 
@@ -404,8 +371,8 @@
                 section.classList.toggle('hidden', this.schedule.length === 0);
                 section.innerHTML = this.schedule.map((round, roundIndex) => `
                     <div class="card">
-                        <h3 style="font-size: 1.5rem; text-align: center; color: var(--secondary-color); font-weight: 700;">Jornada ${round.round}</h3>
-                        <div class="space-y-6 mt-4">
+                        <h3 class="text-center text-xl font-bold text-secondary-color">Fecha ${round.round}</h3>
+                        <div class="space-y-4 mt-4">
                             ${round.matches.map((match, matchIndex) => this.renderMatchCard(match, roundIndex, matchIndex)).join('')}
                         </div>
                     </div>`).join('');
@@ -413,22 +380,21 @@
 
             this.renderMatchCard = function(match, roundIndex, matchIndex) {
                  const id = `${roundIndex}-${matchIndex}`;
-                 return `<div class="border p-4 rounded-lg ${match.played ? 'bg-green-50' : ''}">
+                 return `<div class="border p-3 rounded-lg ${match.played ? 'bg-green-50' : ''}">
                         <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-2">
                             <div class="text-center sm:text-right font-semibold text-lg">${match.team1}</div>
                             <div class="flex items-center justify-center gap-2">
-                                <input type="number" min="0" id="score1-${id}" class="input-field text-center w-16 text-xl font-bold" value="${match.score1 ?? ''}" ${match.played?'readonly':''}>
+                                <input type="number" min="0" id="score1-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score1 ?? ''}" ${match.played?'readonly':''}>
                                 <span class="font-bold text-gray-400">vs</span>
-                                <input type="number" min="0" id="score2-${id}" class="input-field text-center w-16 text-xl font-bold" value="${match.score2 ?? ''}" ${match.played?'readonly':''}>
+                                <input type="number" min="0" id="score2-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score2 ?? ''}" ${match.played?'readonly':''}>
                             </div>
                             <div class="text-center sm:text-left font-semibold text-lg">${match.team2}</div>
                         </div>
-                        ${!match.played ? `<button onclick="app.updateScore(${roundIndex}, ${matchIndex})" class="btn btn-secondary w-full mt-4">¡Guardar Marcador!</button>` : ''}
+                        ${!match.played ? `<button onclick="app.updateScore(${roundIndex}, ${matchIndex})" class="btn btn-secondary w-full mt-3">Guardar Marcador</button>` : ''}
                     </div>`;
             }
             
             this.renderStandings = function() {
-                // Modificado para coincidir con la nueva tabla de emojis
                 document.getElementById('standings-body').innerHTML = this.teams.map((team, index) => `
                     <tr class="${index < 2 ? 'bg-yellow-100' : 'bg-white'} border-b">
                         <td class="p-2 font-bold">${index + 1}</td><td class="p-2">${team.name}</td>
@@ -437,16 +403,6 @@
                         <td class="p-2 text-center">${team.gf}</td><td class="p-2 text-center font-semibold">${team.dg}</td>
                         <td class="p-2 text-center font-bold text-lg text-green-600">${team.pts}</td>
                     </tr>`).join('');
-            }
-            this.renderTopScorers = function() {
-                 const scorerMap = new Map();
-                 this.schedule.forEach(round => round.matches.forEach(match => (match.scorers || []).forEach(scorer => {
-                    const key = `${scorer.player}-${scorer.team}`;
-                    if (!scorerMap.has(key)) scorerMap.set(key, { player: scorer.player, team: scorer.team, goals: 0 });
-                    scorerMap.get(key).goals++;
-                 })));
-                const sortedScorers = Array.from(scorerMap.values()).sort((a, b) => b.goals - a.goals);
-                document.getElementById('top-scorers-body').innerHTML = sortedScorers.map((s, i) => `<tr class="bg-white border-b"><td class="p-2 font-bold">${i+1}</td><td class="p-2">${s.player}</td><td class="p-2 text-gray-600">${s.team}</td><td class="p-2 text-center font-bold">${s.goals}</td></tr>`).join('');
             }
         }
         
