@@ -282,27 +282,72 @@
             
             this.generateSchedule = function() {
                 if (this.teams.length < 2) return;
-                let teams = [...this.teams.map(t => t.name)];
-                if (teams.length % 2 !== 0) { teams.push("descanso"); }
-                
-                const dailyMatches = [];
-                const numRounds = teams.length - 1;
-                const halfSize = teams.length / 2;
 
+                // 1. Generate all possible matches using a standard round-robin algorithm.
+                let teams = [...this.teams.map(t => t.name)];
+                const groupedSchedule = [];
+                if (teams.length % 2 !== 0) {
+                    teams.push("descanso");
+                }
+                const numTeams = teams.length;
+                const numRounds = numTeams - 1;
                 for (let round = 0; round < numRounds; round++) {
-                    for (let i = 0; i < halfSize; i++) {
+                    const roundMatches = [];
+                    for (let i = 0; i < numTeams / 2; i++) {
                         const team1 = teams[i];
-                        const team2 = teams[teams.length - 1 - i];
+                        const team2 = teams[numTeams - 1 - i];
                         if (team1 !== "descanso" && team2 !== "descanso") {
-                            const match = (round % 2 === 0) 
-                                ? { team1: team1, team2: team2 } : { team1: team2, team2: team1 };
-                            dailyMatches.push({ ...match, score1: null, score2: null, played: false, bestPlayer: '', scorers: [] });
+                             const match = (round % 2 === 1) 
+                                ? { team1: team1, team2: team2 } 
+                                : { team1: team2, team2: team1 };
+                            roundMatches.push({
+                                ...match,
+                                score1: null, score2: null, played: false, 
+                                bestPlayer: '', scorers: []
+                            });
                         }
                     }
-                    teams.splice(1, 0, teams.pop());
+                    groupedSchedule.push(roundMatches);
+                    const lastTeam = teams.pop();
+                    teams.splice(1, 0, lastTeam);
+                }
+                let remainingMatches = groupedSchedule.flat();
+
+                // 2. Extract the match between the first two registered teams to ensure it's played first.
+                const team1Name = this.teams[0].name;
+                const team2Name = this.teams[1].name;
+                let firstMatch = null;
+                const firstMatchIndex = remainingMatches.findIndex(m =>
+                    (m.team1 === team1Name && m.team2 === team2Name) ||
+                    (m.team1 === team2Name && m.team2 === team1Name)
+                );
+                if (firstMatchIndex !== -1) {
+                    firstMatch = remainingMatches.splice(firstMatchIndex, 1)[0];
                 }
                 
-                this.schedule = dailyMatches;
+                // 3. Build the final schedule intelligently, ensuring teams get a break.
+                const finalSchedule = [];
+                if (firstMatch) {
+                    finalSchedule.push(firstMatch);
+                }
+                let lastTeamsPlayed = firstMatch ? [firstMatch.team1, firstMatch.team2] : [];
+
+                while (remainingMatches.length > 0) {
+                    let nextMatchIndex = remainingMatches.findIndex(match => 
+                        !lastTeamsPlayed.includes(match.team1) && !lastTeamsPlayed.includes(match.team2)
+                    );
+                    
+                    if (nextMatchIndex === -1) {
+                        nextMatchIndex = 0;
+                    }
+                    
+                    const nextMatch = remainingMatches.splice(nextMatchIndex, 1)[0];
+                    finalSchedule.push(nextMatch);
+                    lastTeamsPlayed = [nextMatch.team1, nextMatch.team2];
+                }
+                
+                // 4. Assign final round numbers and save the newly ordered schedule.
+                this.schedule = finalSchedule;
                 this.saveStateToFirestore();
             }
 
@@ -446,7 +491,7 @@
                 section.classList.toggle('hidden', this.schedule.length === 0);
                 section.innerHTML = this.schedule.map((match, matchIndex) => `
                     <div class="card">
-                        <h3 class="text-center text-xl font-bold text-secondary-color">Fecha ${matchIndex + 1}</h3>
+                        <h3 class="text-center text-xl font-bold" style="color: var(--secondary-color);">Fecha ${matchIndex + 1}</h3>
                         <div class="mt-4">
                             ${this.renderMatchCard(match, matchIndex)}
                         </div>
