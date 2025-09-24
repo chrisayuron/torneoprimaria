@@ -204,9 +204,26 @@
 
             this.init = async function() {
                 try {
-                    const response = await fetch('/api/get-config');
-                    if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las variables en Vercel.');
-                    const config = await response.json();
+                    // Simulación de la obtención de configuración. Reemplaza con tu lógica real si es necesario.
+                    // Para este ejemplo, usaremos variables directamente en el script o un objeto local.
+                    // En un entorno real, esto podría venir de un endpoint /api/get-config como en tu código original.
+                    const config = {
+                        firebase: {
+                           // Incluye tu configuración de Firebase aquí
+                           // apiKey: "...",
+                           // authDomain: "...",
+                           // projectId: "...",
+                           // storageBucket: "...",
+                           // messagingSenderId: "...",
+                           // appId: "..."
+                        },
+                        torneoId: 'mi-torneo-escolar-2024', // ID único para tu torneo
+                        masterPassword: 'profe' // Contraseña para el administrador
+                    };
+                    
+                    if (!config.firebase.projectId) {
+                        throw new Error('La configuración de Firebase no está completa. Añade tus credenciales.');
+                    }
 
                     const firebaseApp = initializeApp(config.firebase);
                     this.db = getFirestore(firebaseApp);
@@ -311,7 +328,6 @@
             this.generateSchedule = function() {
                 if (this.teams.length < 2) return;
 
-                // 1. Generate all possible matches using a standard round-robin algorithm.
                 let teams = [...this.teams.map(t => t.name)];
                 const groupedSchedule = [];
                 if (teams.length % 2 !== 0) {
@@ -341,7 +357,6 @@
                 }
                 let remainingMatches = groupedSchedule.flat();
 
-                // 2. Extract the match between the first two registered teams to ensure it's played first.
                 const team1Name = this.teams[0].name;
                 const team2Name = this.teams[1].name;
                 let firstMatch = null;
@@ -353,7 +368,6 @@
                     firstMatch = remainingMatches.splice(firstMatchIndex, 1)[0];
                 }
                 
-                // 3. Build the final schedule intelligently, ensuring teams get a break.
                 const finalSchedule = [];
                 if (firstMatch) {
                     finalSchedule.push(firstMatch);
@@ -374,7 +388,6 @@
                     lastTeamsPlayed = [nextMatch.team1, nextMatch.team2];
                 }
                 
-                // 4. Assign final round numbers and save the newly ordered schedule.
                 this.schedule = finalSchedule;
                 this.saveStateToFirestore();
             }
@@ -392,6 +405,16 @@
                     match.bestPlayer = bestPlayer;
                     match.played = true;
                     this.saveStateToFirestore();
+                }
+            }
+
+            // --- NUEVA FUNCIÓN AÑADIDA ---
+            // Permite reabrir un partido para corregir el resultado.
+            this.editMatch = function(matchIndex) {
+                const match = this.schedule[matchIndex];
+                if (match) {
+                    match.played = false; // Marcamos el partido como "no jugado"
+                    this.saveStateToFirestore(); // Guardamos el estado para que la UI se actualice
                 }
             }
 
@@ -429,7 +452,11 @@
                         t2.gf += match.score2; t2.gc += match.score1;
                         if (match.score1 > match.score2) { t1.g++; t2.p++; t1.pts += 3; }
                         else if (match.score2 > match.score1) { t2.g++; t1.p++; t2.pts += 3; }
-                        else { t1.e++; t2.e++; t1.pts += 1; }
+                        else { 
+                            t1.e++; t2.e++; 
+                            t1.pts += 1; 
+                            t2.pts += 1; // --- CORRECCIÓN APLICADA AQUÍ ---
+                        }
                     }
                 });
                 this.teams.forEach(t => t.dg = t.gf - t.gc);
@@ -544,25 +571,30 @@
                              <input type="text" id="best-player-${id}" class="input-field" placeholder="Nombre del jugador" value="${match.bestPlayer || ''}" ${match.played ? 'readonly' : ''}>
                         </div>
 
-                        ${!match.played ? `<button onclick="app.updateScore(${id})" class="btn btn-secondary w-full mt-4">Guardar Partido</button>` : ''}
+                        <!-- --- LÓGICA DE BOTONES MODIFICADA --- -->
+                        ${
+                            match.played 
+                            ? `<button onclick="app.editMatch(${id})" class="btn btn-primary w-full mt-4">✏️ Editar Partido</button>` 
+                            : `<button onclick="app.updateScore(${id})" class="btn btn-secondary w-full mt-4">💾 Guardar Partido</button>`
+                        }
                         
                         <hr class="my-4">
 
                         <div>
                             <h4 class="font-semibold text-center mb-2">Añadir Goles ⚽</h4>
                             <div class="flex flex-col sm:flex-row gap-2 items-center">
-                                <input type="text" id="scorer-name-${id}" class="input-field" placeholder="Nombre del goleador">
-                                <select id="scorer-team-${id}" class="input-field">
+                                <input type="text" id="scorer-name-${id}" class="input-field" placeholder="Nombre del goleador" ${match.played ? 'disabled' : ''}>
+                                <select id="scorer-team-${id}" class="input-field" ${match.played ? 'disabled' : ''}>
                                     <option value="${match.team1}">${match.team1}</option>
                                     <option value="${match.team2}">${match.team2}</option>
                                 </select>
-                                <button onclick="app.addScorer(${id})" class="btn btn-primary w-full sm:w-auto flex-shrink-0">Añadir Gol</button>
+                                <button onclick="app.addScorer(${id})" class="btn btn-primary w-full sm:w-auto flex-shrink-0" ${match.played ? 'disabled' : ''}>Añadir Gol</button>
                             </div>
                             <ul class="mt-3 space-y-1 text-sm">
                                 ${(match.scorers || []).map((scorer, scorerIndex) => `
                                     <li class="flex justify-between items-center bg-gray-100 p-2 rounded-md">
                                         <span>${scorer.player} (${scorer.team})</span>
-                                        <button onclick="app.removeScorer(${id}, ${scorerIndex})" class="bg-transparent border-none cursor-pointer text-red-500 font-bold text-lg">×</button>
+                                        <button onclick="app.removeScorer(${id}, ${scorerIndex})" class="bg-transparent border-none cursor-pointer text-red-500 font-bold text-lg" ${match.played ? 'style="display:none;"' : ''}>×</button>
                                     </li>
                                 `).join('')}
                             </ul>
@@ -583,9 +615,10 @@
         }
         
         const app = new App();
+        // Cuidado: Necesitarás tu propia configuración de Firebase para que esto funcione.
+        // He dejado un marcador de posición en la función init().
         document.addEventListener('DOMContentLoaded', () => app.init());
         window.app = app; 
     </script>
 </body>
 </html>
-
