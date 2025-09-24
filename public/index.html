@@ -204,26 +204,11 @@
 
             this.init = async function() {
                 try {
-                    // Simulación de la obtención de configuración. Reemplaza con tu lógica real si es necesario.
-                    // Para este ejemplo, usaremos variables directamente en el script o un objeto local.
-                    // En un entorno real, esto podría venir de un endpoint /api/get-config como en tu código original.
-                    const config = {
-                        firebase: {
-                           // Incluye tu configuración de Firebase aquí
-                           // apiKey: "...",
-                           // authDomain: "...",
-                           // projectId: "...",
-                           // storageBucket: "...",
-                           // messagingSenderId: "...",
-                           // appId: "..."
-                        },
-                        torneoId: 'mi-torneo-escolar-2024', // ID único para tu torneo
-                        masterPassword: 'profe' // Contraseña para el administrador
-                    };
-                    
-                    if (!config.firebase.projectId) {
-                        throw new Error('La configuración de Firebase no está completa. Añade tus credenciales.');
-                    }
+                    // --- LÓGICA RESTAURADA ---
+                    // Vuelve a obtener la configuración desde el endpoint /api/get-config
+                    const response = await fetch('/api/get-config');
+                    if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las variables en Vercel.');
+                    const config = await response.json();
 
                     const firebaseApp = initializeApp(config.firebase);
                     this.db = getFirestore(firebaseApp);
@@ -408,13 +393,11 @@
                 }
             }
 
-            // --- NUEVA FUNCIÓN AÑADIDA ---
-            // Permite reabrir un partido para corregir el resultado.
             this.editMatch = function(matchIndex) {
                 const match = this.schedule[matchIndex];
                 if (match) {
-                    match.played = false; // Marcamos el partido como "no jugado"
-                    this.saveStateToFirestore(); // Guardamos el estado para que la UI se actualice
+                    match.played = false; 
+                    this.saveStateToFirestore(); 
                 }
             }
 
@@ -455,7 +438,7 @@
                         else { 
                             t1.e++; t2.e++; 
                             t1.pts += 1; 
-                            t2.pts += 1; // --- CORRECCIÓN APLICADA AQUÍ ---
+                            t2.pts += 1;
                         }
                     }
                 });
@@ -571,7 +554,6 @@
                              <input type="text" id="best-player-${id}" class="input-field" placeholder="Nombre del jugador" value="${match.bestPlayer || ''}" ${match.played ? 'readonly' : ''}>
                         </div>
 
-                        <!-- --- LÓGICA DE BOTONES MODIFICADA --- -->
                         ${
                             match.played 
                             ? `<button onclick="app.editMatch(${id})" class="btn btn-primary w-full mt-4">✏️ Editar Partido</button>` 
@@ -615,10 +597,9 @@
         }
         
         const app = new App();
-        // Cuidado: Necesitarás tu propia configuración de Firebase para que esto funcione.
-        // He dejado un marcador de posición en la función init().
         document.addEventListener('DOMContentLoaded', () => app.init());
         window.app = app; 
     </script>
 </body>
 </html>
+
