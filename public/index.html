@@ -79,7 +79,7 @@
             <p style="margin-bottom: 1.5rem;">Profe, escribe la contraseña para entrar.</p>
             <div style="position: relative;">
                 <input type="password" id="password-input" class="input-field" placeholder="••••••••" style="padding-right: 3rem;">
-                <button type="button" onclick="app.togglePasswordVisibility()" title="Mostrar/Ocultar contraseña" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999; display: flex; align-items: center; justify-content: center; height: 100%;">
+                <button type="button" onclick="app.togglePasswordVisibility()" title="Mostrar/Ocular contraseña" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999; display: flex; align-items: center; justify-content: center; height: 100%;">
                     <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
                         <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
@@ -110,8 +110,8 @@
         </div>
 
         <div id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1">
-                <div id="config-panel">
+            <div id="config-panel" class="lg:col-span-1">
+                <div>
                     <div class="card">
                          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
                             🧍‍♂️🧍‍♀️ 1. Añade los Equipos
@@ -138,7 +138,7 @@
 
             <div class="lg:col-span-2">
                 <div id="schedule-section" class="space-y-6 hidden"></div>
-                <div id="standings-and-scorers" class="space-y-6 hidden">
+                <div id="standings-and-scorers" class="hidden">
                     <div id="standings-section" class="card">
                          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
                             ⭐ Tabla de Estrellas ⭐
@@ -161,23 +161,44 @@
                             </table>
                         </div>
                     </div>
+                    
+                    <!-- --- NUEVA SECCIÓN DE ESTADÍSTICAS --- -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-0 md:mt-6">
+                        <div id="top-scorers-section" class="card !mb-0">
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                                ⚽ Goleadores del Torneo ⚽
+                            </h2>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm text-left">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class="p-2 rounded-l-lg">#</th>
+                                            <th class="p-2">Jugador</th>
+                                            <th class="p-2">Equipo</th>
+                                            <th class="p-2 text-center rounded-r-lg">Goles</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-scorers-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                    <div id="top-scorers-section" class="card hidden">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
-                            ⚽ Goleadores del Torneo ⚽
-                        </h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm text-left">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="p-2 rounded-l-lg">#</th>
-                                        <th class="p-2">Jugador</th>
-                                        <th class="p-2">Equipo</th>
-                                        <th class="p-2 text-center rounded-r-lg">Goles</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="top-scorers-body"></tbody>
-                            </table>
+                        <div id="least-conceded-section" class="card !mb-0">
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--title-color); margin-bottom: 1rem;">
+                                🧤 Valla Menos Vencida 🧤
+                            </h2>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm text-left">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th class="p-2 rounded-l-lg">#</th>
+                                            <th class="p-2">Equipo</th>
+                                            <th class="p-2 text-center rounded-r-lg">GC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="least-conceded-body"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -193,7 +214,7 @@
 
         const App = function() {
             this.teams = [];
-            this.schedule = []; // Ahora será un array plano de partidos
+            this.schedule = [];
             this.finalMatch = null;
             this.masterPassword = '';
             this.isAuthenticated = false;
@@ -204,8 +225,6 @@
 
             this.init = async function() {
                 try {
-                    // --- LÓGICA RESTAURADA ---
-                    // Vuelve a obtener la configuración desde el endpoint /api/get-config
                     const response = await fetch('/api/get-config');
                     if (!response.ok) throw new Error('No se pudo obtener la configuración. Revisa las variables en Vercel.');
                     const config = await response.json();
@@ -426,7 +445,7 @@
             this.calculateTeamStats = function() {
                 this.teams.forEach(t => { t.pj=0; t.g=0; t.e=0; t.p=0; t.gf=0; t.gc=0; t.dg=0; t.pts=0; });
                 this.schedule.forEach(match => {
-                    if (match.played) {
+                    if (match.played && typeof match.score1 === 'number' && typeof match.score2 === 'number') {
                         const t1 = this.teams.find(t => t.name === match.team1);
                         const t2 = this.teams.find(t => t.name === match.team2);
                         if (!t1 || !t2) return;
@@ -446,14 +465,10 @@
                 this.teams.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
             }
             
-            this.checkAndSetupFinals = function() {
+            this.checkAndDeclareWinner = function() {
                 const allPlayed = this.schedule.length > 0 && this.schedule.every(m => m.played);
-                if (allPlayed && !this.finalMatch && this.teams.length >= 2) {
-                   this.finalMatch = { 
-                       team1: this.teams[0].name, team2: this.teams[1].name, 
-                       score1: null, score2: null, played: false, winner: null
-                    };
-                   this.finalMatch.winner = this.teams[0].name;
+                if (allPlayed && (!this.finalMatch || !this.finalMatch.winner) && this.teams.length >= 2) {
+                   this.finalMatch = { winner: this.teams[0].name };
                    this.saveStateToFirestore();
                 }
             }
@@ -485,98 +500,122 @@
                         </tr>
                     `).join('');
                 }
-                const topScorersSection = document.getElementById('top-scorers-section');
-                if (topScorersSection) {
-                    topScorersSection.classList.toggle('hidden', sortedScorers.length === 0);
+                document.getElementById('top-scorers-section').classList.toggle('hidden', sortedScorers.length === 0);
+            }
+
+            // --- NUEVA FUNCIÓN PARA CALCULAR VALLA MENOS VENCIDA ---
+            this.calculateAndRenderLeastConceded = function() {
+                const sortedTeams = [...this.teams].sort((a, b) => a.gc - b.gc || b.dg - a.dg);
+                const body = document.getElementById('least-conceded-body');
+                
+                if (body) {
+                     body.innerHTML = sortedTeams.map((team, index) => `
+                        <tr class="bg-white border-b">
+                            <td class="p-2 font-bold">${index + 1}</td>
+                            <td class="p-2">${team.name}</td>
+                            <td class="p-2 text-center font-bold text-lg">${team.gc}</td>
+                        </tr>
+                    `).join('');
                 }
+                document.getElementById('least-conceded-section').classList.toggle('hidden', this.teams.length === 0);
             }
 
             this.renderAll = function() {
                 if (!this.isAuthenticated) return;
                 
                 this.calculateTeamStats();
-                this.checkAndSetupFinals();
+                this.checkAndDeclareWinner();
 
-                if (this.finalMatch && this.finalMatch.winner) {
+                const isTournamentOver = this.finalMatch && this.finalMatch.winner;
+
+                if (isTournamentOver) {
                     document.getElementById('winner-section').classList.remove('hidden');
                     document.getElementById('winner-name').textContent = `🎉 ${this.finalMatch.winner} 🎉`;
-                    document.getElementById('main-content').classList.add('hidden');
-                    return; 
+                } else {
+                    document.getElementById('winner-section').classList.add('hidden');
                 }
-                document.getElementById('winner-section').classList.add('hidden');
+                
                 document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('config-panel').classList.toggle('hidden', isTournamentOver);
                 
                 const scheduleGenerated = this.schedule.length > 0;
-                document.getElementById('add-team-wrapper').style.opacity = scheduleGenerated ? '0.5' : '1';
-                document.getElementById('team-name').disabled = scheduleGenerated;
-                document.getElementById('add-team-btn').disabled = scheduleGenerated;
+                document.getElementById('add-team-wrapper').style.opacity = scheduleGenerated || isTournamentOver ? '0.5' : '1';
+                document.getElementById('team-name').disabled = scheduleGenerated || isTournamentOver;
+                document.getElementById('add-team-btn').disabled = scheduleGenerated || isTournamentOver;
                 document.getElementById('standings-and-scorers').classList.toggle('hidden', !scheduleGenerated);
                 document.getElementById('reset-tournament-btn').classList.toggle('hidden', this.teams.length === 0);
 
                 this.renderTeams();
-                this.renderSchedule();
+                this.renderSchedule(isTournamentOver);
                 this.renderStandings();
                 this.calculateAndRenderTopScorers();
+                this.calculateAndRenderLeastConceded();
             }
             
             this.renderTeams = function() {
-                document.getElementById('teams-list').innerHTML = this.teams.map((team, index) => `<div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg"><span class="font-semibold">${team.name}</span><button onclick="app.removeTeam(${index})" class="bg-transparent border-none cursor-pointer text-red-500 text-xl font-bold">×</button></div>`).join('');
+                const isTournamentOver = this.finalMatch && this.finalMatch.winner;
+                document.getElementById('teams-list').innerHTML = this.teams.map((team, index) => `<div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg"><span class="font-semibold">${team.name}</span><button ${isTournamentOver ? 'style="display:none;"' : ''} onclick="app.removeTeam(${index})" class="bg-transparent border-none cursor-pointer text-red-500 text-xl font-bold">×</button></div>`).join('');
                 document.getElementById('generate-schedule-btn').disabled = this.teams.length < 2 || this.schedule.length > 0;
             }
 
-            this.renderSchedule = function() {
+            this.renderSchedule = function(isTournamentOver = false) {
                 const section = document.getElementById('schedule-section');
                 section.classList.toggle('hidden', this.schedule.length === 0);
                 section.innerHTML = this.schedule.map((match, matchIndex) => `
                     <div class="card">
                         <h3 class="text-center text-xl font-bold" style="color: var(--secondary-color);">Fecha ${matchIndex + 1}</h3>
                         <div class="mt-4">
-                            ${this.renderMatchCard(match, matchIndex)}
+                            ${this.renderMatchCard(match, matchIndex, isTournamentOver)}
                         </div>
                     </div>`).join('');
             }
 
-            this.renderMatchCard = function(match, matchIndex) {
+            this.renderMatchCard = function(match, matchIndex, isTournamentOver) {
                  const id = `${matchIndex}`;
+                 let buttonHtml = '';
+                 if (!isTournamentOver) {
+                    if (match.played) {
+                        buttonHtml = `<button onclick="app.editMatch(${id})" class="btn btn-primary w-full mt-4">✏️ Editar Partido</button>`;
+                    } else {
+                        buttonHtml = `<button onclick="app.updateScore(${id})" class="btn btn-secondary w-full mt-4">💾 Guardar Partido</button>`;
+                    }
+                 }
+
                  return `<div class="border p-4 rounded-lg ${match.played ? 'bg-green-50' : ''}">
                         <div class="grid grid-cols-1 sm:grid-cols-3 items-center gap-2">
                             <div class="text-center sm:text-right font-semibold text-lg">${match.team1}</div>
                             <div class="flex items-center justify-center gap-2">
-                                <input type="number" min="0" id="score1-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score1 ?? ''}" ${match.played ? 'readonly' : ''}>
+                                <input type="number" min="0" id="score1-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score1 ?? ''}" ${match.played || isTournamentOver ? 'readonly' : ''}>
                                 <span class="font-bold text-gray-400">vs</span>
-                                <input type="number" min="0" id="score2-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score2 ?? ''}" ${match.played ? 'readonly' : ''}>
+                                <input type="number" min="0" id="score2-${id}" class="input-field text-center w-14 text-lg font-bold" value="${match.score2 ?? ''}" ${match.played || isTournamentOver ? 'readonly' : ''}>
                             </div>
                             <div class="text-center sm:text-left font-semibold text-lg">${match.team2}</div>
                         </div>
                         
                         <div class="mt-4">
                              <label for="best-player-${id}" class="block text-sm font-semibold mb-1">🏅 Mejor Jugador del Partido:</label>
-                             <input type="text" id="best-player-${id}" class="input-field" placeholder="Nombre del jugador" value="${match.bestPlayer || ''}" ${match.played ? 'readonly' : ''}>
+                             <input type="text" id="best-player-${id}" class="input-field" placeholder="Nombre del jugador" value="${match.bestPlayer || ''}" ${match.played || isTournamentOver ? 'readonly' : ''}>
                         </div>
 
-                        ${
-                            match.played 
-                            ? `<button onclick="app.editMatch(${id})" class="btn btn-primary w-full mt-4">✏️ Editar Partido</button>` 
-                            : `<button onclick="app.updateScore(${id})" class="btn btn-secondary w-full mt-4">💾 Guardar Partido</button>`
-                        }
+                        ${buttonHtml}
                         
                         <hr class="my-4">
 
                         <div>
                             <h4 class="font-semibold text-center mb-2">Añadir Goles ⚽</h4>
                             <div class="flex flex-col sm:flex-row gap-2 items-center">
-                                <input type="text" id="scorer-name-${id}" class="input-field" placeholder="Nombre del goleador" ${match.played ? 'disabled' : ''}>
-                                <select id="scorer-team-${id}" class="input-field" ${match.played ? 'disabled' : ''}>
+                                <input type="text" id="scorer-name-${id}" class="input-field" placeholder="Nombre del goleador" ${isTournamentOver ? 'disabled' : ''}>
+                                <select id="scorer-team-${id}" class="input-field" ${isTournamentOver ? 'disabled' : ''}>
                                     <option value="${match.team1}">${match.team1}</option>
                                     <option value="${match.team2}">${match.team2}</option>
                                 </select>
-                                <button onclick="app.addScorer(${id})" class="btn btn-primary w-full sm:w-auto flex-shrink-0" ${match.played ? 'disabled' : ''}>Añadir Gol</button>
+                                <button onclick="app.addScorer(${id})" class="btn btn-primary w-full sm:w-auto flex-shrink-0" ${isTournamentOver ? 'disabled' : ''}>Añadir Gol</button>
                             </div>
                             <ul class="mt-3 space-y-1 text-sm">
                                 ${(match.scorers || []).map((scorer, scorerIndex) => `
                                     <li class="flex justify-between items-center bg-gray-100 p-2 rounded-md">
                                         <span>${scorer.player} (${scorer.team})</span>
-                                        <button onclick="app.removeScorer(${id}, ${scorerIndex})" class="bg-transparent border-none cursor-pointer text-red-500 font-bold text-lg" ${match.played ? 'style="display:none;"' : ''}>×</button>
+                                        <button onclick="app.removeScorer(${id}, ${scorerIndex})" class="bg-transparent border-none cursor-pointer text-red-500 font-bold text-lg" ${isTournamentOver ? 'style="display:none;"' : ''}>×</button>
                                     </li>
                                 `).join('')}
                             </ul>
